@@ -11,8 +11,8 @@ class Boid:
         self.velocity = p5.Vector.random2D()
         self.velocity.setMag(random(0.5,1))
         self.acceleration = createVector()
-        self.max_force = 0.05
-        self.max_speed = 1
+        self.max_force = 1
+        self.max_speed = 4
         #print(f'velocity {self.velocity} acceleration {self.acceleration}')
         
     def update(self):
@@ -22,11 +22,9 @@ class Boid:
         
     def show(self):
         fill("blue")
-        diameter = 10#sin(frameCount / 60) * 50 + 50
+        diameter = 10#sin(frameCount / 60) * 50 + 10
         x, y = self.position.x, self.position.y
         ellipse(x, y, diameter, diameter)
-        #print(self.position)
-        #print(f'position {self.position.x}')
     
     def wrap_around(self):
         if self.position.x > 600: self.position.x = 0
@@ -35,7 +33,7 @@ class Boid:
         elif self.position.y < 0: self.position.y = 400
         
     def align(self, boids):
-        perception_radius = 50
+        perception_radius = 10
         steering = createVector()
         total = 0
         for other_boid in boids:
@@ -50,11 +48,12 @@ class Boid:
         if total > 0:
             steering.div(total)
             steering.setMag(self.max_speed)
-            alignment_force = (steering.sub(self.velocity)).limit(self.max_force)
+            steering.sub(self.velocity)
+            alignment_force = steering.limit(self.max_force)
             self.acceleration.add(alignment_force)
             
     def cohesion(self, boids):
-        perception_radius = 100
+        perception_radius = 1
         steering = createVector()
         total = 0
         for other_boid in boids:
@@ -70,11 +69,12 @@ class Boid:
             steering.div(total)
             steering.sub(self.position)
             steering.setMag(self.max_speed)
-            cohesion_force = (steering.sub(self.velocity)).limit(self.max_force)
+            steering.sub(self.velocity)
+            cohesion_force = steering.limit(self.max_force)
             self.acceleration.add(cohesion_force)
             
     def separation(self, boids):
-        perception_radius = 1000
+        perception_radius = 100
         steering = createVector()
         total = 0
         for other_boid in boids:
@@ -83,16 +83,16 @@ class Boid:
                     other_boid.position.x,
                     other_boid.position.y)
             if other_boid == self or d > perception_radius: continue
-            diff = p5.Vector.sub(self.position, other.position)
+            diff = p5.Vector.sub(self.position, other_boid.position)
             diff.div(d)
             steering.add(diff)
             total+=1
             
         if total > 0:
             steering.div(total)
-            steering.sub(self.position)
             steering.setMag(self.max_speed)
-            cohesion_force = (steering.sub(self.velocity)).limit(self.max_force)
+            steering.sub(self.velocity)
+            cohesion_force = steering.limit(self.max_force)
             self.acceleration.add(cohesion_force)
             
     def reset_acceleration(self):
@@ -114,9 +114,10 @@ def setup():
 def draw():
     background(200)
     for boid in flock:
-        boid.wrap_around()
         boid.reset_acceleration()
         boid.align(flock)
         boid.cohesion(flock)
+        boid.separation(flock)
+        boid.wrap_around()
         boid.update()
         boid.show()
