@@ -1661,8 +1661,12 @@ def setup():
     max_speed_slider = createSlider(0.1,10,5,0.1)
     max_force_slider = createSlider(0.1,5,1,0.1)
     bounce_checkbox = createCheckbox('Wallbounce', False)
-    
-    flock = [Boid() for i in range(35)]
+    add_boid_button = createButton('Add Boid')
+    sub_boid_button = createButton('Del Boid')
+
+    flock = [Boid() for i in range(20)]
+    add_boid_button.mousePressed(add_boid)
+    sub_boid_button.mousePressed(del_boid)
 
 def draw():
     background(200)
@@ -1673,7 +1677,7 @@ def draw():
         15, 580)
     text(f"Alignment Radius: {a_percept_slider.value()}\t\t Cohesion Radius: {c_percept_slider.value()}\t\t Separation Radius: {s_percept_slider.value()}",
         380, 600)
-    text(f"Max Speed: {max_speed_slider.value()}\t\t\t\t\t\t\t\t Max Force: {max_force_slider.value()}",
+    text(f"Max Speed: {max_speed_slider.value()}\t\t\t\t\t\t\t\t Max Force: {max_force_slider.value()}\t\t\t\t\t\t\t # Boids: {len(flock)}",
         30, 600)
     
     global max_speed, max_force
@@ -1689,7 +1693,12 @@ def draw():
         else: boid.wrap_around()
         boid.update()
         boid.show()
-            
+        
+def add_boid():
+    flock.append(Boid())
+
+def del_boid():
+    flock.pop()
 
 class Boid:
     def __init__ (self):
