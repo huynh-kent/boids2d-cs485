@@ -1650,6 +1650,34 @@ let userCode = `
 #import random
 #import numpy as np
 #from js import p5
+#diameter=100
+#diameter = sin(frameCount / 60) * 50 + 50
+#radius=diameter/2
+flock = []
+width, height = 1200, 800
+#alignment_slider,cohesion_slider,separation_slider = None,None,None
+#global alignment_slider
+
+def setup():
+    createCanvas(600, 400)
+    global alignment_slider, cohesion_slider, separation_slider
+    alignment_slider = createSlider(0,5,1,0.1)
+    cohesion_slider = createSlider(0,5,1,0.1)
+    separation_slider = createSlider(0,5,1,0.1)
+    for i in range(30):
+        flock.append(Boid())
+
+def draw():
+    background(200)
+    for boid in flock:
+        boid.reset_acceleration()
+        boid.align(flock)
+        boid.cohesion(flock)
+        boid.separation(flock)
+        boid.wrap_around()
+        boid.update()
+        boid.show()
+            
 
 class Boid:
     def __init__ (self):
@@ -1699,10 +1727,11 @@ class Boid:
             steering.setMag(self.max_speed)
             steering.sub(self.velocity)
             alignment_force = steering.limit(self.max_force)
+            alignment_force.mult(alignment_slider.value())
             self.acceleration.add(alignment_force)
             
     def cohesion(self, boids):
-        perception_radius = 1
+        perception_radius = 100
         steering = createVector()
         total = 0
         for other_boid in boids:
@@ -1720,6 +1749,7 @@ class Boid:
             steering.setMag(self.max_speed)
             steering.sub(self.velocity)
             cohesion_force = steering.limit(self.max_force)
+            cohesion_force.mult(cohesion_slider.value())
             self.acceleration.add(cohesion_force)
             
     def separation(self, boids):
@@ -1741,35 +1771,14 @@ class Boid:
             steering.div(total)
             steering.setMag(self.max_speed)
             steering.sub(self.velocity)
-            cohesion_force = steering.limit(self.max_force)
-            self.acceleration.add(cohesion_force)
+            separation_force = steering.limit(self.max_force)
+            separation_force.mult(separation_slider.value())
+            self.acceleration.add(separation_force)
             
     def reset_acceleration(self):
         self.acceleration.mult(0)
-            
-    
-    
-diameter=100
-#diameter = sin(frameCount / 60) * 50 + 50
-radius=diameter/2
-flock = []
-width, height = 1200, 800
+        
 
-def setup():
-    createCanvas(600, 400)
-    for i in range(20):
-        flock.append(Boid())
-
-def draw():
-    background(200)
-    for boid in flock:
-        boid.reset_acceleration()
-        boid.align(flock)
-        boid.cohesion(flock)
-        boid.separation(flock)
-        boid.wrap_around()
-        boid.update()
-        boid.show()
 `;
 
 const startCode = `
