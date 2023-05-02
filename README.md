@@ -4,6 +4,8 @@ Utilized Pyp5js to code in Python along with p5.js to draw in the browser.
 
 Have to run through a local web server, opening html file directly will not work.
 
+Adjust browser size to fit canvas width to have sliders line up with corresponding labels.
+
 
 Some popular local web server options:  
 VSCode Live Server Extension - https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer  
