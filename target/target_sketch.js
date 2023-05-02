@@ -1658,8 +1658,10 @@ class Boid:
         self.position = createVector(random(0,width),random(0,height))
         #self.position = p5.Vector([100], [1])
         self.velocity = p5.Vector.random2D()
-        self.velocity.setMag(random(0.1,0.2))
+        self.velocity.setMag(random(0.5,1))
         self.acceleration = createVector()
+        self.max_force = 0.05
+        self.max_speed = 1
         #print(f'velocity {self.velocity} acceleration {self.acceleration}')
         
     def update(self):
@@ -1681,7 +1683,6 @@ class Boid:
         elif self.position.y < 0: self.position.y = 400
             
         
-        
     def align(self, boids):
         perception_radius = 50
         steering = createVector()
@@ -1698,7 +1699,8 @@ class Boid:
             
         if total > 0:
             steering.div(total)
-            self.acceleration = steering.sub(self.velocity)
+            steering.setMag(self.max_speed)
+            self.acceleration = (steering.sub(self.velocity)).limit(self.max_force)
             
     
     
