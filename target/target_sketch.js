@@ -1688,12 +1688,13 @@ class Boid:
         steering = createVector()
         total = 0
         for other_boid in boids:
+            if other_boid == self: continue
             d = dist(self.position.x,
                     self.position.y,
                     other_boid.position.x,
                     other_boid.position.y)
-            if d == 0: continue
-            elif d < perception_radius:
+            #if d == 0: continue
+            if d < perception_radius:
                 steering.add(other_boid.velocity)
                 total+=1
             
