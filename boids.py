@@ -18,6 +18,7 @@ class Boid:
     def update(self):
         self.position.add(self.velocity)
         self.velocity.add(self.acceleration)
+        self.velocity.limit(self.max_speed)
         
     def show(self):
         fill("blue")
@@ -32,7 +33,6 @@ class Boid:
         elif self.position.x < 0: self.position.x = 600
         if self.position.y > 400: self.position.y = 0
         elif self.position.y < 0: self.position.y = 400
-            
         
     def align(self, boids):
         perception_radius = 50
@@ -52,7 +52,33 @@ class Boid:
         if total > 0:
             steering.div(total)
             steering.setMag(self.max_speed)
-            self.acceleration = (steering.sub(self.velocity)).limit(self.max_force)
+            alignment_force = (steering.sub(self.velocity)).limit(self.max_force)
+            self.acceleration.add(alignment_force)
+            
+    def cohesion(self, boids):
+        perception_radius = 1000
+        steering = createVector()
+        total = 0
+        for other_boid in boids:
+            if other_boid == self: continue
+            d = dist(self.position.x,
+                    self.position.y,
+                    other_boid.position.x,
+                    other_boid.position.y)
+            #if d == 0: continue
+            if d < perception_radius:
+                steering.add(other_boid.velocity)
+                total+=1
+            
+        if total > 0:
+            steering.div(total)
+            steering.sub(self.position)
+            steering.setMag(self.max_speed)
+            cohesion_force = (steering.sub(self.velocity)).limit(self.max_force)
+            self.acceleration.add(cohesion_force)
+            
+    def reset_acceleration(self):
+        self.acceleration.mult(0)
             
     
     
@@ -71,6 +97,8 @@ def draw():
     background(200)
     for boid in flock:
         boid.wrap_around()
+        boid.reset_acceleration()
         boid.align(flock)
+        boid.cohesion(flock)
         boid.update()
         boid.show()
