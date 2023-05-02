@@ -1647,70 +1647,90 @@ windowResized = None
 `;
 
 let userCode = `
-#import random
-#import numpy as np
-#from js import p5
-#diameter=100
-#diameter = sin(frameCount / 60) * 50 + 50
-#radius=diameter/2
-flock = []
-width, height = 1200, 800
-#alignment_slider,cohesion_slider,separation_slider = None,None,None
-#global alignment_slider
-
 def setup():
-    createCanvas(600, 400)
+    createCanvas(800, 600)
+    global flock, max_speed_slider, max_force_slider, bounce_checkbox
     global alignment_slider, cohesion_slider, separation_slider
-    alignment_slider = createSlider(0,5,1,0.1)
-    cohesion_slider = createSlider(0,5,1,0.1)
-    separation_slider = createSlider(0,5,1,0.1)
-    for i in range(30):
-        flock.append(Boid())
+    global a_percept_slider, c_percept_slider, s_percept_slider
+    alignment_slider = createSlider(0,5,1,0.2)
+    cohesion_slider = createSlider(0,5,1,0.2)
+    separation_slider = createSlider(0,5,1,0.2)
+    a_percept_slider = createSlider(0,500,100,5)
+    c_percept_slider = createSlider(0,500,100,5)
+    s_percept_slider = createSlider(0,500,100,5)
+    max_speed_slider = createSlider(0.1,10,5,0.1)
+    max_force_slider = createSlider(0.1,5,1,0.1)
+    bounce_checkbox = createCheckbox('Wallbounce', False)
+    
+    flock = [Boid() for i in range(35)]
 
 def draw():
     background(200)
+    textAlign(LEFT, BOTTOM)
+    textStyle(BOLD)
+    fill("black")
+    text(f"Alignment Value: {alignment_slider.value()}\t\t\t\t Cohesion Value: {cohesion_slider.value()}\t\t\t Separation Value: {separation_slider.value()}",
+        15, 580)
+    text(f"Alignment Radius: {a_percept_slider.value()}\t\t Cohesion Radius: {c_percept_slider.value()}\t\t Separation Radius: {s_percept_slider.value()}",
+        380, 600)
+    text(f"Max Speed: {max_speed_slider.value()}\t\t\t\t\t\t\t\t Max Force: {max_force_slider.value()}",
+        30, 600)
+    
+    global max_speed, max_force
+    max_speed = max_speed_slider.value()
+    max_force = max_force_slider.value()
+    
     for boid in flock:
         boid.reset_acceleration()
         boid.align(flock)
         boid.cohesion(flock)
         boid.separation(flock)
-        boid.wrap_around()
+        if bounce_checkbox.checked(): boid.wall_bounce()
+        else: boid.wrap_around()
         boid.update()
         boid.show()
             
 
 class Boid:
     def __init__ (self):
-        #self.x = random.randrange(0+radius,600-radius)
-        #self.y = random.randrange(0+radius,400-radius)
-        self.position = createVector(random(0,width),random(0,height))
-        #self.position = p5.Vector([100], [1])
+        self.position = createVector(random(0,800),random(0,500))
         self.velocity = p5.Vector.random2D()
         self.velocity.setMag(random(0.5,1))
         self.acceleration = createVector()
-        self.max_force = 1
-        self.max_speed = 4
-        #print(f'velocity {self.velocity} acceleration {self.acceleration}')
         
     def update(self):
         self.position.add(self.velocity)
         self.velocity.add(self.acceleration)
-        self.velocity.limit(self.max_speed)
+        self.velocity.limit(max_speed)
         
     def show(self):
-        fill("blue")
-        diameter = 10#sin(frameCount / 60) * 50 + 10
+        fill("white")
+        diameter = 20 #(sin(frameCount / 60) * 10) + 20
         x, y = self.position.x, self.position.y
         ellipse(x, y, diameter, diameter)
     
+    def wall_bounce(self):
+        if self.position.x > 800:
+            self.position.x = 790
+            self.velocity.mult(-1)
+        if self.position.x < 0:
+            self.position.x = 10
+            self.velocity.mult(-1)
+        if self.position.y > 550:
+            self.position.y = 540
+            self.velocity.mult(-1)
+        if self.position.y < 0: 
+            self.positiony = 10
+            self.velocity.mult(-1)
+    
     def wrap_around(self):
-        if self.position.x > 600: self.position.x = 0
-        elif self.position.x < 0: self.position.x = 600
-        if self.position.y > 400: self.position.y = 0
-        elif self.position.y < 0: self.position.y = 400
+        if self.position.x > 800: self.position.x = 0
+        elif self.position.x < 0: self.position.x = 800
+        if self.position.y > 550: self.position.y = 0
+        elif self.position.y < 0: self.position.y = 550
         
     def align(self, boids):
-        perception_radius = 10
+        perception_radius = a_percept_slider.value()
         steering = createVector()
         total = 0
         for other_boid in boids:
@@ -1724,14 +1744,14 @@ class Boid:
             
         if total > 0:
             steering.div(total)
-            steering.setMag(self.max_speed)
+            steering.setMag(max_speed)
             steering.sub(self.velocity)
-            alignment_force = steering.limit(self.max_force)
+            alignment_force = steering.limit(max_force)
             alignment_force.mult(alignment_slider.value())
             self.acceleration.add(alignment_force)
             
     def cohesion(self, boids):
-        perception_radius = 100
+        perception_radius = c_percept_slider.value()
         steering = createVector()
         total = 0
         for other_boid in boids:
@@ -1746,14 +1766,14 @@ class Boid:
         if total > 0:
             steering.div(total)
             steering.sub(self.position)
-            steering.setMag(self.max_speed)
+            steering.setMag(max_speed)
             steering.sub(self.velocity)
-            cohesion_force = steering.limit(self.max_force)
+            cohesion_force = steering.limit(max_force)
             cohesion_force.mult(cohesion_slider.value())
             self.acceleration.add(cohesion_force)
             
     def separation(self, boids):
-        perception_radius = 100
+        perception_radius = s_percept_slider.value()
         steering = createVector()
         total = 0
         for other_boid in boids:
@@ -1769,9 +1789,9 @@ class Boid:
             
         if total > 0:
             steering.div(total)
-            steering.setMag(self.max_speed)
+            steering.setMag(max_speed)
             steering.sub(self.velocity)
-            separation_force = steering.limit(self.max_force)
+            separation_force = steering.limit(max_force)
             separation_force.mult(separation_slider.value())
             self.acceleration.add(separation_force)
             
