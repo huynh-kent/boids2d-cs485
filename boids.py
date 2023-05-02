@@ -54,7 +54,7 @@ class Boid:
             self.acceleration.add(alignment_force)
             
     def cohesion(self, boids):
-        perception_radius = 1000
+        perception_radius = 100
         steering = createVector()
         total = 0
         for other_boid in boids:
@@ -63,7 +63,7 @@ class Boid:
                     other_boid.position.x,
                     other_boid.position.y)
             if other_boid == self or d > perception_radius: continue
-            steering.add(other_boid.velocity)
+            steering.add(other_boid.position)
             total+=1
             
         if total > 0:
@@ -83,7 +83,9 @@ class Boid:
                     other_boid.position.x,
                     other_boid.position.y)
             if other_boid == self or d > perception_radius: continue
-            steering.add(other_boid.velocity)
+            diff = p5.Vector.sub(self.position, other.position)
+            diff.div(d)
+            steering.add(diff)
             total+=1
             
         if total > 0:
