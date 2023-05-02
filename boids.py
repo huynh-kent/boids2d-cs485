@@ -39,15 +39,13 @@ class Boid:
         steering = createVector()
         total = 0
         for other_boid in boids:
-            if other_boid == self: continue
             d = dist(self.position.x,
                     self.position.y,
                     other_boid.position.x,
                     other_boid.position.y)
-            #if d == 0: continue
-            if d < perception_radius:
-                steering.add(other_boid.velocity)
-                total+=1
+            if other_boid == self or d > perception_radius: continue
+            steering.add(other_boid.velocity)
+            total+=1
             
         if total > 0:
             steering.div(total)
@@ -60,15 +58,33 @@ class Boid:
         steering = createVector()
         total = 0
         for other_boid in boids:
-            if other_boid == self: continue
             d = dist(self.position.x,
                     self.position.y,
                     other_boid.position.x,
                     other_boid.position.y)
-            #if d == 0: continue
-            if d < perception_radius:
-                steering.add(other_boid.velocity)
-                total+=1
+            if other_boid == self or d > perception_radius: continue
+            steering.add(other_boid.velocity)
+            total+=1
+            
+        if total > 0:
+            steering.div(total)
+            steering.sub(self.position)
+            steering.setMag(self.max_speed)
+            cohesion_force = (steering.sub(self.velocity)).limit(self.max_force)
+            self.acceleration.add(cohesion_force)
+            
+    def separation(self, boids):
+        perception_radius = 1000
+        steering = createVector()
+        total = 0
+        for other_boid in boids:
+            d = dist(self.position.x,
+                    self.position.y,
+                    other_boid.position.x,
+                    other_boid.position.y)
+            if other_boid == self or d > perception_radius: continue
+            steering.add(other_boid.velocity)
+            total+=1
             
         if total > 0:
             steering.div(total)
