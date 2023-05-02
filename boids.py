@@ -9,9 +9,9 @@ class Boid:
         self.position = createVector(random(0,600),random(0,400))
         #self.position = p5.Vector([100], [1])
         self.velocity = p5.Vector.random2D()
-        self.velocity.setMag(random(0.5,1.5))
-        print(f'velocity {self.velocity}')
+        self.velocity.setMag(random(0.1,0.2))
         self.acceleration = createVector()
+        print(f'velocity {self.velocity} acceleration {self.acceleration}')
         
     def update(self):
         self.position.add(self.velocity)
@@ -26,6 +26,26 @@ class Boid:
         #print(f'position {self.position.x}')
         
         
+    def align(self, boids):
+        perception_radius = 100
+        steering = createVector()
+        total = 0
+        for other_boid in boids:
+            d = dist(self.position.x,
+                    self.position.y,
+                    other_boid.position.x,
+                    other_boid.position.y)
+            if d == 0: continue
+            elif d < perception_radius:
+                steering.add(other_boid.velocity)
+                total+=1
+            
+        if total > 0:
+            steering.div(total)
+            self.acceleration = steering.sub(self.velocity)
+            
+    
+    
 diameter=100
 #diameter = sin(frameCount / 60) * 50 + 50
 radius=diameter/2
@@ -39,5 +59,6 @@ def setup():
 def draw():
     background(200)
     for boid in flock:
+        boid.align(flock)
         boid.update()
         boid.show()
