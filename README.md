@@ -13,4 +13,4 @@ Node Live Server - https://www.npmjs.com/package/live-server/v/0.8.0
 
 
 Screenshot of Boids program running in Browser
-<img width="809" alt="image" src="https://user-images.githubusercontent.com/78402151/235708164-6e0ef4ee-ebcf-478b-ab7c-f9f2e0e5db24.png">
+<img width="806" alt="image" src="https://user-images.githubusercontent.com/78402151/235721830-ce4d9a7e-b454-45d4-a332-e88e8181bd9d.png">
